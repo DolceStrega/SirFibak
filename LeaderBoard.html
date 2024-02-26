@@ -1,0 +1,232 @@
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js"></script>
+</head>
+
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  border-top: 4px solid #DC0000;
+  background: #15151E;
+  color: #fff;
+  font-family: 'Rubik', sans-serif;
+  /* center the table horizontally */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+table {
+  /* position relative to include a band on the left of the container */
+  margin: 0rem 1rem;
+  position: relative;
+  /* cap the width of the table, allowing for a sizeable portion of white space if allowed by the viewport */
+  width: calc(90vw - 2rem);
+  max-width: 800px;
+  /* spacing to separate the table rows vertically */
+  border-spacing: 0 1rem;
+}
+/* with a pseudo element add a band with a repeating linear gradient */
+table:before {
+  position: absolute;
+  content: '';
+  right: calc(100% + 1rem);
+  top: 0;
+  height: 100%;
+  width: 1.5rem;
+  border-radius: 5px;
+  border: 1px solid #38383F;
+  background: repeating-linear-gradient(-45deg, #15151E 0px, #15151E 4px, #38383F 4px, #38383F 8px);
+}
+/* center every element nested in a table row */
+table tr > * {
+  text-align: center;
+  padding: 0.5rem;
+}
+/* align every second item of each row to the left */
+table tr > *:nth-child(2) {
+  text-align: left;
+}
+
+
+/* style the headings to have thin uppercase titles for the columns */
+table th {
+  font-weight: 300;
+  letter-spacing: 0.04rem;
+  font-size: 0.9rem;
+  color: #eee;
+  text-transform: uppercase;
+}
+
+/* slightly increase the weight of the cell describing the position */
+table td.position {
+  font-weight: 500;
+}
+
+/* style the cell with the driver visually separating the first, last name and team */
+table td.driver {
+  padding-left: 1rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.05rem;
+}
+table td.driver strong {
+  text-transform: uppercase;
+  font-weight: 500;
+}
+table td.driver span {
+  text-transform: capitalize;
+  margin-left: 0.75rem;
+  font-size: 0.8rem;
+  color: #999;
+  letter-spacing: initial;
+}
+
+/* style the span nested in the last cell to have the gap in a rounded rectangle */
+table td.gap span {
+  background: #38383F;
+  border-radius: 30px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+/* on smaller viewports remove the third column from sight */
+@media (max-width: 500px) {
+  table tr > *:nth-child(3) {
+    display: none;
+  }
+}
+</style>
+
+<body>
+    <h4>TABLA DE POSICIONES ENTRENADORES DEL CONDADO DE SIR FIBAK</h4>
+
+    <table>
+        <tr>
+          <th>
+            Pos
+          </th>
+          <th>
+            Entrenador
+          </th>
+          <th>
+            Puntaje
+          </th>
+        </tr>
+    </table>
+
+    <a href="destination.html" target="_blank">
+        <button style="background-color: blue; color: white;">Primer Torneo</button>
+    </a>
+</body>
+
+<script>
+    // array describing the color for each team
+// using camel case where the team names include a space
+const colors = {
+  Guardias: '#00D2BE',
+  2: '#DC0000',
+  3: '#1E41FF',
+  4: '#FFF500',
+  5: '#F596C8',
+  6: '#9B0000',
+  toroRosso: '#469BFF',
+  haas: '#BD9E57',
+  mclaren: '#FF8700',
+  williams: '#FFFFFF'
+}
+
+// array describing the drivers, sorted by position and with a gap describing the distance from the leading driver
+const leaderboard = [
+  {
+    name: 'Max MCall',
+    team: 'Guardias',
+    gap: '8'
+  },
+  {
+    name: 'J Pendragon',
+    team: '2',
+    gap: '7'
+  },
+  {
+    name: 'Bill Ghost',
+    team: '3',
+    gap: '4'
+  },
+  {
+    name: 'Toni Williams',
+    team: '4',
+    gap: '3'
+  },
+  {
+    name: 'Phil',
+    team: '5',
+    gap: '2'
+  },
+  {
+    name: 'Gabriel',
+    team: '5',
+    gap: '2'
+  },
+  {
+    name: 'Saul Green',
+    team: '5',
+    gap: '2'
+  }, {
+    name: 'Aquiles',
+    team: '6',
+    gap: '1'
+  }
+];
+
+// target the table element in which to add one div for each driver
+const main = d3
+  .select('table');
+
+// for each driver add one table row
+// ! add a class to the row to differentiate the rows from the existing one
+// otherwise the select method would target the existing one and include one row less than the required amount
+const drivers = main
+  .selectAll('tr.driver')
+  .data(leaderboard)
+  .enter()
+  .append('tr')
+  .attr('class', 'driver');
+
+// in each row add the information specified by the dataset in td elements
+// specify a class to style the elements differently with CSS
+
+// position using the index of the data points
+drivers
+  .append('td')
+  .text((d, i) => i + 1)
+  .attr('class', 'position');
+
+
+// name followed by the team
+drivers
+  .append('td')
+  // include the last name in a separate element to style it differently
+  // include the team also in another element for the same reason
+  .html (({name, team}) => `${name.split(' ').map((part, index) => index > 0 ? `<strong>${part}</strong>` : `${part}`).join(' ')} <span>${team}</span>`)
+  // include a border with the color matching the team
+  .style('border-left', ({team}) => {
+    // find the color using the string value found in d.team
+    // ! if the string value has a space, camelCase the value
+    const color = team.split(' ').map((word, index) => index > 0 ? `${word[0].toUpperCase()}${word.slice(1)}` : `${word}` ).join('');
+    return `4px solid ${colors[color]}`;
+  })
+  .attr('class', 'driver');
+
+// gap from the first driver
+drivers
+  .append('td')
+  .attr('class', 'gap')
+  .append('span')
+  .text(({gap}) => gap);
+</script>
